@@ -1,0 +1,145 @@
+/* --- DEFINICIÓN DE COLORES CON VARIABLES CSS --- */
+:root {
+    --bg-primary: #f3f4f6; /* Fondo principal */
+    --bg-secondary: #fff; /* Fondo de tarjetas, inputs */
+    --bg-tertiary: #f9fafb; /* Fondo de cabeceras de tabla, items de config */
+    --bg-hover: #f9fafb; /* Hover en pestañas */
+    --bg-total-row: #f3f4f6;
+
+    --text-primary: #1f2937; /* Texto principal */
+    --text-secondary: #4b5563; /* Texto secundario, títulos de tabla */
+    --text-tertiary: #6b7280; /* Texto más claro, iconos */
+    --text-inverted: #fff; /* Texto sobre fondos de color */
+    --text-accent: #2563eb; /* Pestaña activa */
+
+    --border-primary: #e5e7eb; /* Borde de tablas, items */
+    --border-input: #d1d5db; /* Borde de inputs */
+    --border-accent: #2563eb; /* Borde de pestaña activa */
+    --border-focus: #3b82f6; /* Borde de input con foco */
+    --shadow-focus: rgba(59, 130, 246, 0.2);
+
+    --btn-edit-bg: #eff6ff;
+    --btn-edit-border: #dbeafe;
+    --btn-edit-text: #2563eb;
+    --btn-edit-hover-bg: #2563eb;
+    --btn-edit-hover-text: white;
+
+    --btn-pdf-bg: #374151;
+    --btn-pdf-hover-bg: #4b5563;
+}
+
+html.dark {
+    --bg-primary: #111827;
+    --bg-secondary: #1f2937;
+    --bg-tertiary: #1f2937;
+    --bg-hover: #374151;
+    --bg-total-row: #374151;
+
+    --text-primary: #d1d5db;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #9ca3af;
+    --text-inverted: #fff;
+    --text-accent: #60a5fa;
+
+    --border-primary: #374151;
+    --border-input: #4b5563;
+    --border-accent: #60a5fa;
+    --border-focus: #60a5fa;
+    --shadow-focus: rgba(96, 165, 250, 0.4);
+
+    --btn-edit-bg: #374151;
+    --btn-edit-border: #4b5563;
+    --btn-edit-text: #9ca3af;
+    --btn-edit-hover-bg: #4b5563;
+    --btn-edit-hover-text: white;
+
+    --btn-pdf-bg: #4b5563;
+    --btn-pdf-hover-bg: #52525b;
+}
+
+/* --- ESTILOS GENERALES --- */
+body { font-family: 'Poppins', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.2s, color 0.2s; }
+
+/* Tarjetas de Resumen */
+.summary-card { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+/* Inputs y Selects */
+.form-input, .form-select {
+    width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border-input); border-radius: 0.375rem;
+    background-color: var(--bg-secondary); color: var(--text-primary); outline: none; transition: all 0.2s;
+}
+.form-input:focus, .form-select:focus {
+    border-color: var(--border-focus); box-shadow: 0 0 0 2px var(--shadow-focus);
+}
+.input-error {
+    border-color: #ef4444 !important;
+}
+
+/* --- Pestañas de Navegación (Estilo Subrayado) --- */
+nav.flex {
+    gap: 1.5rem; /* Aumentamos la separación para un look más limpio */
+}
+.tab-btn {
+    padding: 0.5rem 0.25rem; /* Menos padding horizontal */
+    border: none;
+    border-bottom: 2px solid transparent; /* Borde inferior transparente como base */
+    border-radius: 0;
+    background-color: transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s ease-in-out;
+}
+.tab-btn.active {
+    color: var(--text-accent); 
+    font-weight: 600; /* Un poco más de peso para destacar */
+    border-bottom-color: var(--border-accent); /* Mostramos el subrayado de color */
+    background-color: transparent;
+}
+.tab-btn:hover:not(.active) {
+    color: var(--text-primary); border-bottom-color: var(--border-primary);
+}
+
+/* Tablas */
+.data-table th { background-color: var(--bg-tertiary); color: var(--text-secondary); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; padding: 0.75rem 1.5rem; text-align: left; white-space: nowrap; }
+.data-table td { padding: 1rem 1.5rem; white-space: nowrap; font-size: 0.875rem; color: var(--text-primary); border-bottom: 1px solid var(--border-primary); }
+
+/* Historial Items */
+.history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem; background-color: var(--bg-secondary); border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); margin-bottom: 0.5rem;
+    border-left-width: 4px;
+}
+/* Botones de Filtro y Acción */
+.cc-filter-btn {
+    padding: 0.25rem 0.75rem; font-size: 0.875rem; font-weight: 500; border-radius: 9999px;
+    background-color: var(--bg-primary); color: var(--text-secondary); transition: all 0.2s;
+}
+.cc-filter-btn.active { background-color: var(--text-accent); color: var(--text-inverted); }
+
+.edit-btn { padding: 0.25rem; border-radius: 9999px; background-color: var(--bg-primary); color: var(--text-tertiary); }
+.edit-btn:hover { background-color: var(--bg-hover); color: var(--text-primary); }
+
+/* Botones de acción en tablas (Pagar, Eliminar compra) */
+.table-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9999px; transition: all 0.2s; color: var(--text-tertiary); }
+.table-action-btn:hover { background-color: var(--bg-hover); color: var(--text-primary); }
+.table-action-btn.pay-btn:hover { background-color: #dcfce7; color: #16a34a; } /* Verde claro */
+.table-action-btn.delete-btn:hover { background-color: #fee2e2; color: #ef4444; } /* Rojo claro */
+
+/* Estilos Configuración - Botones robustos */
+.cat-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: var(--bg-tertiary); border: 1px solid var(--border-primary); border-radius: 0.375rem; margin-bottom: 0.5rem; }
+.cat-actions { display: flex; gap: 0.5rem; }
+.cat-btn { 
+    cursor: pointer; display: flex; align-items: center; justify-content: center; 
+    width: 32px; height: 32px; border-radius: 0.375rem; border: 1px solid transparent;
+    transition: all 0.2s;
+}
+.cat-edit { color: var(--btn-edit-text); background-color: var(--btn-edit-bg); border-color: var(--btn-edit-border); } 
+.cat-edit:hover { background-color: var(--btn-edit-hover-bg); color: var(--btn-edit-hover-text); }
+
+.cat-delete { color: #dc2626; background-color: #fef2f2; border-color: #fee2e2; } 
+.btn-pdf {
+    background-color: var(--btn-pdf-bg); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.15s;
+}
+.btn-pdf:hover { background-color: var(--btn-pdf-hover-bg); }
+
+/* Utilidades */
+.hidden { display: none; }

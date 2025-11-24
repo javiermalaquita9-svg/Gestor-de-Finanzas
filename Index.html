@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Finanzas Personales</title>
+    
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carga de Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Carga de Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Carga de jsPDF y jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Carga de Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+    <!-- Enlace al archivo de estilos CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-700">
+
+    <!-- SECCIÓN DE LOGIN (Oculta por defecto) -->
+    <section id="login-section" class="max-w-md mx-auto mt-10">
+        <div class="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2 text-center">Gestor de Finanzas</h1>
+            <p class="text-sm text-gray-500 mb-6 text-center">Inicia sesión para continuar</p>
+
+            <!-- Formulario de Login -->
+            <form id="login-form" class="mb-4">
+                <div class="mb-4">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Correo Electrónico</label>
+                    <input type="email" id="login-email" class="form-input" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Contraseña</label>
+                    <input type="password" id="login-password" class="form-input" required>
+                </div>
+                <button type="submit" class="w-full py-2 px-4 rounded-lg text-white font-bold bg-blue-600 hover:bg-blue-700">Iniciar Sesión</button>
+            </form>
+
+            <!-- Separador -->
+            <div class="flex items-center my-4">
+                <hr class="flex-grow border-t border-gray-200"><span class="mx-2 text-xs text-gray-400">O</span><hr class="flex-grow border-t border-gray-200">
+            </div>
+
+            <!-- Otros métodos de login -->
+            <button id="google-login-btn" class="w-full py-2 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-center mb-4">
+                <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" class="h-5 mr-2" alt="Google Logo">
+                <span class="font-medium text-gray-700">Iniciar con Google</span>
+            </button>
+
+            <p id="auth-error" class="text-xs text-center text-red-500 mt-2 h-4"></p>
+            <p class="text-xs text-center text-gray-500 mt-4">¿No tienes cuenta? <a href="#" id="show-register" class="font-medium text-blue-600 hover:underline">Regístrate aquí</a></p>
+        </div>
+    </section>
+
+    <!-- CONTENIDO PRINCIPAL DE LA APP (Oculto por defecto) -->
+    <div id="app-content" class="max-w-7xl mx-auto hidden">
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Gestor de Finanzas</h1>
+            <button id="logout-btn" class="text-sm font-medium text-slate-500 hover:text-blue-600">Cerrar Sesión</button>
+        </div>
+
+        <!-- Navegación -->
+        <nav class="flex border-b border-slate-200 mb-6 overflow-x-auto">
+            <button class="tab-btn active" data-page="summary-page">Resumen</button>
+            <button class="tab-btn" data-page="savings-page">Ahorros</button>
+            <button class="tab-btn" data-page="cc-page">Tarjetas</button>
+            <button class="tab-btn" data-page="reports-page">Reportes</button>
+            <button class="tab-btn" data-page="settings-page">Configuración</button>
+        </nav>
+
+        <main>
+            <!-- PÁGINA RESUMEN -->
+            <section id="summary-page" class="page-content">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="summary-card bg-white p-5 rounded-lg shadow-sm border-t-4 border-blue-500">
+                        <h2 class="text-sm font-semibold text-slate-600">Saldo Total</h2>
+                        <p id="total-balance" class="text-3xl font-bold text-slate-800">$0</p>
+                    </div>
+                    <div class="summary-card bg-white p-5 rounded-lg shadow-sm border-t-4 border-green-500">
+                        <h2 class="text-sm font-semibold text-slate-600">Ingresos</h2>
+                        <p id="total-income" class="text-3xl font-bold text-slate-800">$0</p>
+                    </div>
+                    <div class="summary-card bg-white p-5 rounded-lg shadow-sm border-t-4 border-red-500">
+                        <h2 class="text-sm font-semibold text-slate-600">Gastos</h2>
+                        <p id="total-expense" class="text-3xl font-bold text-slate-800">$0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Formulario -->
+                    <div class="bg-white p-6 rounded-lg border border-slate-200 h-fit">
+                        <h2 id="form-title" class="text-xl font-semibold text-slate-800 mb-4 text-center">Nueva Transacción</h2>
+                        
+                        <form id="transaction-form">
+                            <div class="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-100">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Tipo</label>
+                                    <select id="type-select" class="form-select">
+                                        <option value="income">Ingreso</option>
+                                        <option value="expense">Gasto</option>
+                                        <option value="saving">Ahorro</option>
+                                    </select>
+                                </div>
+                                <div id="category-wrapper">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Categoría</label>
+                                    <select id="category-select" class="form-select"></select>
+                                </div>
+                            </div>
+
+                            <!-- Descripción y Fecha -->
+                            <div id="desc-date-wrapper" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Descripción</label>
+                                    <input type="text" id="desc-input" class="form-input" placeholder="Ej. Supermercado">
+                                </div>
+                                <div id="transaction-date-section">
+                                    <label class="block text-xs font-medium text-gray-500 mb-1">Fecha de Transacción</label>
+                                    <input type="date" id="transaction-date-input" class="form-input">
+                                </div>
+                            </div>
+                            <!-- Sección Cuotas (Oculta por defecto) -->
+                            <div id="installments-section" class="mb-4 pb-4 border-b border-gray-100 hidden">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">N° Cuotas</label>
+                                        <input type="number" id="installments-input" class="form-input" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Fecha 1er Pago</label>
+                                        <input type="date" id="installments-date-input" class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label id="amount-label" class="block text-xs font-medium text-gray-500 mb-1">Monto</label>
+                                <input type="text" id="amount-input" class="form-input text-lg font-semibold" placeholder="$0">
+                            </div>
+
+                            <!-- Mensaje de Error -->
+                            <div id="form-error" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                <p class="text-xs text-red-600 flex items-center">
+                                    <span class="mr-2">⚠️</span> Por favor complete los campos obligatorios.
+                                </p>
+                            </div>
+
+                            <button type="submit" id="submit-btn" class="w-full py-3 px-4 rounded-lg text-white font-bold transition-transform transform hover:scale-[1.02]">Agregar</button>
+                        </form>
+                    </div>
+
+                    <!-- Historial -->
+                    <div class="bg-white p-6 rounded-lg border border-slate-200">
+                        <div class="flex justify-between items-center mb-4 ">
+                            <h2 class="text-xl font-semibold text-gray-800">Historial</h2>
+                            <select id="history-filter" class="form-select text-xs w-32 py-1"></select>
+                        </div>
+                        <div id="history-list" class="space-y-2 max-h-[500px] overflow-y-auto"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PÁGINA AHORROS -->
+            <section id="savings-page" class="page-content hidden">
+                <div class="bg-white p-6 rounded-lg border border-slate-200">
+                    <div class="bg-white border-t-4 border-purple-500 p-6 rounded-lg shadow-sm max-w-sm mx-auto mb-8 text-center">
+                        <h2 class="text-sm font-medium text-slate-500">Total Ahorrado</h2>
+                        <p id="savings-total" class="text-4xl font-bold mt-2 text-slate-800">$0</p>
+                    </div>
+
+                    <h2 class="text-xl font-semibold text-slate-800 mb-4">Historial de Ahorros</h2>
+                    <div class="overflow-x-auto mb-8">
+                        <table class="w-full data-table text-sm">
+                            <thead><tr><th>Descripción</th><th>Fecha</th><th class="text-right">Monto</th></tr></thead>
+                            <tbody id="savings-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="mb-8 border-t border-gray-100 pt-6">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Evolución del Ahorro (Últimos 6 Meses)</h3>
+                        <div class="h-64 w-full max-w-2xl mx-auto">
+                            <canvas id="savings-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PÁGINA TARJETAS -->
+            <section id="cc-page" class="page-content hidden">
+                <div class="bg-white p-6 rounded-lg border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-800 mb-5">Tarjetas de Crédito</h2>
+
+                    <!-- Filtros -->
+                    <div id="cc-filter-container" class="mb-5 flex flex-wrap gap-2"></div>
+
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Proyección de Pagos</h3>
+                    <div class="overflow-x-auto mb-8 border rounded-lg">
+                        <table class="w-full data-table text-sm">
+                            <thead id="projection-header"></thead>
+                            <tbody id="projection-body"></tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Compras Activas</h3>
+                    <div class="overflow-x-auto mb-8 border rounded-lg">
+                        <table class="w-full data-table">
+                            <thead><tr><th>Descripción</th><th>Emisor</th><th class="text-right">Cuota</th><th class="text-right">Restantes</th><th class="text-right">Acción</th></tr></thead>
+                            <tbody id="active-purchases-body"></tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Historial de Pagos (TC)</h3>
+                    <div class="overflow-x-auto border rounded-lg">
+                        <table class="w-full data-table">
+                            <thead><tr><th>Descripción</th><th>Tarjeta</th><th>Fecha</th><th class="text-right">Monto</th></tr></thead>
+                            <tbody id="cc-history-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PÁGINA REPORTES -->
+            <section id="reports-page" class="page-content hidden">
+                <div class="bg-white p-6 rounded-lg border border-slate-200 mb-6">
+                    <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                        <h2 class="text-xl font-semibold text-slate-800">Reporte Mensual</h2>
+                        <div class="flex items-center gap-2 ">
+                            <select id="report-month-select" class="form-select text-sm w-32 py-1"></select>
+                            <select id="report-year-select" class="form-select text-sm w-24 py-1"></select>
+                        </div>
+                        <button id="pdf-btn" class="btn-pdf">Descargar PDF</button>
+                    </div>
+                    <!-- Grid para los dos gráficos -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-700 text-center mb-2">Gastos Generales</h3>
+                            <div class="h-64 w-full max-w-md mx-auto"><canvas id="expense-chart"></canvas></div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-700 text-center mb-2">Uso de Cupo Actual</h3>
+                            <div class="h-64 w-full max-w-md mx-auto"><canvas id="credit-card-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-700 mb-4">Transacciones del Mes</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full data-table">
+                            <thead class="bg-slate-50"><tr><th>Descripción</th><th>Tipo</th><th>Categoría</th><th>Fecha</th><th class="text-right">Monto</th></tr></thead>
+                            <tbody id="monthly-report-body"></tbody></table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PÁGINA CONFIGURACIÓN -->
+            <section id="settings-page" class="page-content hidden">
+                <!-- Apariencia -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <h3 class="font-semibold mb-4 text-gray-700 border-b pb-2 border-gray-100">Apariencia</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Modo Oscuro</span>
+                        <label for="theme-toggle" class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="theme-toggle" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Información de Usuario -->
+                <div class="bg-white p-6 rounded-lg border border-slate-200 mb-6">
+                    <h3 class="font-semibold mb-4 text-gray-700 border-b pb-2 border-gray-100">Información de Usuario</h3>
+                    <form id="user-info-form">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Nombre Completo</label>
+                                <input type="text" id="user-name-input" class="form-input text-sm" placeholder="Tu nombre">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Correo Electrónico</label>
+                                <input type="email" id="user-email-input" class="form-input text-sm" placeholder="tu@correo.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Teléfono</label>
+                                <div class="flex">
+                                    <select id="user-phone-code-select" class="form-select rounded-r-none text-sm" style="width: auto;"></select>
+                                    <input type="tel" id="user-phone-input" class="form-input rounded-l-none text-sm" placeholder="9 1234 5678">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-medium">Guardar Información</button>
+                    </form>
+                </div>
+
+                <!-- Gestión de Categorías y Tarjetas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Categorías de Ingresos -->
+                    <div class="bg-white p-6 rounded-lg border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800 border-b pb-2 border-slate-100">Ingresos</h3>
+                        <form class="flex gap-2 mb-4" onsubmit="addCat(event, 'income')">
+                            <input type="text" id="new-income-cat" class="form-input text-sm" placeholder="Nueva categoría" required>
+                            <button class="bg-green-600 text-white px-3 rounded-md hover:bg-green-700 font-bold">+</button>
+                        </form>
+                        <div id="income-cat-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                    </div>
+
+                    <!-- Categorías de Gastos -->
+                    <div class="bg-white p-6 rounded-lg border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800 border-b pb-2 border-slate-100">Gastos</h3>
+                        <form class="flex gap-2 mb-4" onsubmit="addCat(event, 'expense')">
+                            <input type="text" id="new-expense-cat" class="form-input text-sm" placeholder="Nueva categoría" required>
+                            <button class="bg-red-600 text-white px-3 rounded-md hover:bg-red-700 font-bold">+</button>
+                        </form>
+                        <div id="expense-cat-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                    </div>
+
+                    <!-- Tarjetas de Crédito -->
+                    <div class="bg-white p-6 rounded-lg border border-slate-200">
+                        <h3 class="text-lg font-semibold mb-4 text-slate-800 border-b pb-2 border-slate-100">Tarjetas de Crédito</h3>
+                        <form class="space-y-3 mb-4" onsubmit="addCard(event)">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="new-card-name" class="form-input text-sm" placeholder="Nombre Tarjeta" required>
+                                <input type="text" id="new-card-limit" class="form-input text-sm" placeholder="Cupo Total" required>
+                            </div>
+                            <button class="bg-teal-600 text-white px-3 rounded-md hover:bg-teal-700 font-bold w-full py-2">Agregar Tarjeta</button>
+                        </form>
+                        <div id="card-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                        <p class="mt-4 text-[10px] text-gray-500 bg-teal-50 p-2 rounded border border-teal-100 leading-tight">
+                            Las tarjetas se añaden automáticamente a las categorías de Gasto.
+                        </p>
+                        <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                            <p class="text-xs text-yellow-700 leading-tight">
+                                <span class="font-bold">Importante:</span> Toda tu información se guarda de forma segura en este navegador. Si limpias la caché o usas un navegador diferente, los datos no estarán disponibles.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    <script src="script.js" defer></script>
+</body>
+</html>
