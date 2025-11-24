@@ -1,18 +1,7 @@
 // --- ESTADO INICIAL ---
 
 // --- CONFIGURACIÓN DE FIREBASE ---
-// Las claves se cargan desde variables de entorno (p. ej., un archivo .env)
-// para no exponerlas en el código fuente.
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-};
-
+// La variable 'firebaseConfig' ahora se carga desde config.js
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
