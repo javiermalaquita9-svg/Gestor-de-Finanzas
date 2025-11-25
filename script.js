@@ -1,11 +1,22 @@
-// --- ESTADO INICIAL ---
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBy1jm7cHZUGEILSOm0BE126dnD25CLLG8",
+  authDomain: "finanzas-1-5f22e.firebaseapp.com",
+  projectId: "finanzas-1-5f22e",
+  storageBucket: "finanzas-1-5f22e.firebasestorage.app",
+  messagingSenderId: "699580113964",
+  appId: "1:699580113964:web:375768d861d4eb9ad99d89",
+  measurementId: "G-8WLGDGSNKK"
+};// ... aquí termina tu firebaseConfig (línea 10)
 
-// --- CONFIGURACIÓN DE FIREBASE ---
-// La variable 'firebaseConfig' ahora se carga desde config.js
+// 1. ESTA ES LA LÍNEA QUE FALTABA PARA CONECTAR TODO:
 firebase.initializeApp(firebaseConfig);
+
+// 2. Definimos las herramientas
 const db = firebase.firestore();
 const auth = firebase.auth();
 
+// 3. Restauramos la lista de países que se borró:
 const countryCodes = [
     { name: 'Chile', code: 'CL', dial_code: '+56', flag: '🇨🇱' },
     { name: 'Argentina', code: 'AR', dial_code: '+54', flag: '🇦🇷' },
@@ -15,6 +26,8 @@ const countryCodes = [
     { name: 'España', code: 'ES', dial_code: '+34', flag: '🇪🇸' },
     { name: 'USA', code: 'US', dial_code: '+1', flag: '🇺🇸' },
 ];
+
+// ... aquí sigue tu const defaultData
 
 // Este objeto 'defaultData' ahora servirá como plantilla para nuevos usuarios.
 // Ya no será la fuente principal de datos.
